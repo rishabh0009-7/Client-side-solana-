@@ -95,6 +95,10 @@ export default function Page() {
         })
       );
 
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = publicKey;
+
       const signature = await sendTransaction(transaction, connection);
       console.log("Transaction sent:", signature);
       alert(`Transaction sent! Signature: ${signature}`);
@@ -113,43 +117,54 @@ export default function Page() {
       </WalletMultiButton>
       <WalletDisconnectButton className="bg-red-500 text-white p-2 rounded-md mt-2" />
 
-      <input
-        type="text"
-        className="border-2 border-gray-300 p-2 rounded-md"
-        placeholder="Enter amount"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-      />
-      <button
-        onClick={() => requestairdrop()}
-        className="bg-green-500 text-white p-2 rounded-md"
-      >
-        request airdrop
-      </button>
+      <div className="flex flex-col gap-4 mt-4">
+        <div>
+          <input
+            type="text"
+            className="border-2 border-gray-300 p-2 rounded-md"
+            placeholder="Enter amount (for airdrop)"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+          <button
+            onClick={() => requestairdrop()}
+            className="bg-green-500 text-white p-2 rounded-md ml-2"
+          >
+            request airdrop
+          </button>
+        </div>
 
-      <button
-        onClick={() => showbalance()}
-        className="bg-green-500 text-white p-2 rounded-md"
-      >
-        show balance
-      </button>
+        <button
+          onClick={() => showbalance()}
+          className="bg-blue-500 text-white p-2 rounded-md"
+        >
+          show balance
+        </button>
 
-      <button
-        onClick={() => signmessage()}
-        className="bg-green-500 text-white p-2 rounded-md"
-      >
-        sign message{" "}
-      </button>
+        <button
+          onClick={() => signmessage()}
+          className="bg-purple-500 text-white p-2 rounded-md"
+        >
+          sign message
+        </button>
 
-      <input
-        type="text"
-        className="border-2 border-gray-300 p-2 rounded-md"
-        placeholder="Enter recipient address"
-        value={to}
-        onChange={(e) => setTo(e.target.value)}
-      />
-
-      <input type="text" className="border-2 border-gray-300 p-2 rounded-md" placeholder="Enter amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        <div>
+          <input
+            type="text"
+            className="border-2 border-gray-300 p-2 rounded-md"
+            placeholder="Enter recipient address"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+          />
+          <input
+            type="text"
+            className="border-2 border-gray-300 p-2 rounded-md ml-2"
+            placeholder="Enter amount to send"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+        </div>
+      </div>
       <button
         onClick={() => sendtoken()}
         className="bg-green-500 text-white p-2 rounded-md"
