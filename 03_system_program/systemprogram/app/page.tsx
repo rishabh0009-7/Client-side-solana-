@@ -6,8 +6,11 @@ export default function ownership() {
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [transferLoading, setTransferLoading] = useState(false);
+  const [ownershipLoading, setOwnershipLoading] = useState(false);
   const [toAddress, setToAddress] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
+  const [accountAddress, setAccountAddress] = useState<string>("");
+  const [newOwnerAddress, setNewOwnerAddress] = useState<string>("");
 
   async function createAccount() {
     setLoading(true);
@@ -92,6 +95,51 @@ https://explorer.solana.com/tx/${data.signature}?cluster=devnet`);
     }
   }
 
+  async function transferOwnership() {
+    if (!accountAddress || !newOwnerAddress) {
+      setResult("Please enter both account address and new owner address");
+      return;
+    }
+
+    setOwnershipLoading(true);
+    setResult("Transferring ownership...");
+
+    try {
+      const response = await fetch("/api/transfer-ownership", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          accountAddress,
+          newOwnerAddress,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setResult(`✅ Ownership transferred successfully!
+        
+🏠 Account Address: ${data.accountAddress}
+👤 New Owner: ${data.newOwnerAddress}
+👤 Previous Owner: ${data.payerPublicKey}
+📝 Transaction Signature: ${data.signature}
+
+🔍 Verify on Solana Explorer:
+https://explorer.solana.com/tx/${data.signature}?cluster=devnet`);
+      } else {
+        setResult(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      setResult(
+        `Error: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    } finally {
+      setOwnershipLoading(false);
+    }
+  }
+
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <h1>
@@ -146,7 +194,14 @@ https://explorer.solana.com/tx/${data.signature}?cluster=devnet`);
         >
           💰 2. Transfer Lamports
         </h3>
-        <p style={{ color: "#004085", marginBottom: "20px", fontSize: "18px", fontWeight: "500" }}>
+        <p
+          style={{
+            color: "#004085",
+            marginBottom: "20px",
+            fontSize: "18px",
+            fontWeight: "500",
+          }}
+        >
           💸 Transfer SOL from your account to another address
         </p>
 
@@ -240,6 +295,133 @@ https://explorer.solana.com/tx/${data.signature}?cluster=devnet`);
             }}
           >
             {transferLoading ? "⏳ Transferring..." : "🚀 Transfer Lamports"}
+          </button>
+        </div>
+      </div>
+
+      {/* Ownership Transfer Section */}
+      <div
+        style={{
+          marginTop: "40px",
+          padding: "25px",
+          border: "3px solid #dc3545",
+          borderRadius: "12px",
+          backgroundColor: "#f8d7da",
+          boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+          position: "relative",
+        }}
+      >
+        <h3
+          style={{
+            marginTop: "0",
+            color: "#721c24",
+            fontSize: "24px",
+            fontWeight: "bold",
+          }}
+        >
+          🏠 3. Transfer Ownership
+        </h3>
+        <p
+          style={{
+            color: "#721c24",
+            marginBottom: "20px",
+            fontSize: "18px",
+            fontWeight: "500",
+          }}
+        >
+          🔄 Transfer ownership of an account to a new program
+        </p>
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "15px",
+            maxWidth: "500px",
+          }}
+        >
+          <div>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "5px",
+                fontWeight: "500",
+                color: "#495057",
+              }}
+            >
+              Account Address:
+            </label>
+            <input
+              type="text"
+              value={accountAddress}
+              onChange={(e) => setAccountAddress(e.target.value)}
+              placeholder="Enter account address to transfer ownership"
+              style={{
+                width: "100%",
+                padding: "15px",
+                border: "2px solid #dc3545",
+                borderRadius: "8px",
+                fontSize: "16px",
+                fontFamily: "monospace",
+                backgroundColor: "black",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              }}
+            />
+          </div>
+
+          <div>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "5px",
+                fontWeight: "500",
+                color: "#495057",
+              }}
+            >
+              New Owner (Program ID):
+            </label>
+            <input
+              type="text"
+              value={newOwnerAddress}
+              onChange={(e) => setNewOwnerAddress(e.target.value)}
+              placeholder="Enter new owner program ID"
+              style={{
+                width: "100%",
+                padding: "15px",
+                border: "2px solid #dc3545",
+                borderRadius: "8px",
+                fontSize: "16px",
+                fontFamily: "monospace",
+                backgroundColor: "black",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              }}
+            />
+          </div>
+
+          <button
+            onClick={transferOwnership}
+            disabled={ownershipLoading || !accountAddress || !newOwnerAddress}
+            style={{
+              padding: "15px 30px",
+              fontSize: "18px",
+              fontWeight: "bold",
+              backgroundColor:
+                ownershipLoading || !accountAddress || !newOwnerAddress
+                  ? "#ccc"
+                  : "#dc3545",
+              color: "white",
+              border: "none",
+              borderRadius: "10px",
+              cursor:
+                ownershipLoading || !accountAddress || !newOwnerAddress
+                  ? "not-allowed"
+                  : "pointer",
+              alignSelf: "flex-start",
+              boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+              transition: "all 0.3s ease",
+            }}
+          >
+            {ownershipLoading ? "⏳ Transferring..." : "🏠 Transfer Ownership"}
           </button>
         </div>
       </div>
